@@ -8,7 +8,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 class Post(models.Model):
     title = models.CharField(max_length=250)
-    image = models.ImageField(upload_to='post_pictures', default='posts/default.jpg')
+    image = models.ImageField(upload_to='post_pictures')
     slug = models.SlugField(max_length=250, unique_for_date='publish')
     publish = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
