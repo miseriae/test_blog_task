@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from django.http.response import HttpResponseRedirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import CreateView
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Post, Comment
 from .forms import CommentForm, PostForm
@@ -12,6 +14,7 @@ def home(request):
     return render(request, 'home.html', {'posts': all_posts})
 
 
+@login_required
 def post_detail(request, post):
     post = get_object_or_404(Post, slug=post)
 
@@ -48,7 +51,7 @@ def post_detail(request, post):
     return render(request, 'post_detail.html', context=context)
 
 
-class AddPostView(CreateView):
+class AddPostView(LoginRequiredMixin, CreateView):
     model = Post
     template_name = 'add_post.html'
     form_class = PostForm

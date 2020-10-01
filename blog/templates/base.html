@@ -28,6 +28,9 @@
             <div class="navbar-nav">
               <a class="nav-item nav-link active">Hey {{ user.username }} <span class="sr-only">(current)</span></a>
             </div>
+            <div class="navbar-nav">
+              <a class="nav-item nav-link active" href="{% url 'logout' %}">Logout <span class="sr-only">(current)</span></a>
+            </div>
             {% else %}
             <div class="navbar-nav">
               <a class="nav-item nav-link active" href="{% url 'users:register' %}">Register <span class="sr-only">(current)</span></a>
