@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
 from django.http.response import HttpResponseRedirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import CreateView
@@ -17,38 +18,35 @@ def home(request):
 @login_required
 def post_detail(request, post):
     post = get_object_or_404(Post, slug=post)
-
     allcomments = post.comments.all()
-    page = request.GET.get('page', 1)
-    paginator = Paginator(allcomments, 6)
+    comment_form = CommentForm()
 
-    try:
-        comments = paginator.page(page)
-    except PageNotAnInteger:
-        comments = paginator.page(1)
-    except EmptyPage:
-        comments = paginator.page(paginator.num_pages)
-
-    user_comment = None
-
-    if request.method == 'POST':
-        comment_form = CommentForm(request.POST)
-        if comment_form.is_valid():
-            comment_form.instance.user = request.user
-            user_comment = comment_form.save(commit=False)
-            user_comment.post = post
-            user_comment.save()
-            return HttpResponseRedirect(post.slug)
-    else:
-        comment_form = CommentForm()
     context = {
         'post': post,
-        'comments': user_comment,
-        'comments': comments,
         'comment_form': comment_form,
         'allcomments': allcomments
     }
     return render(request, 'post_detail.html', context=context)
+
+
+def addcomment(request):
+    if request.method == 'POST':
+
+        if request.POST.get('action') == 'delete':
+            id = request.POST.get('nodeid')
+            c = Comment.objects.get(id=id)
+            c.delete()
+            return JsonResponse({'remove': id})
+        else:
+            comment_form = CommentForm(request.POST)
+
+            if comment_form.is_valid():
+                user_comment = comment_form.save(commit=False)
+                user_comment.user = request.user
+                user_comment.save()
+                result = comment_form.cleaned_data.get('content')
+                user = request.user.username
+                return JsonResponse({'result': result, 'user': user})
 
 
 class AddPostView(LoginRequiredMixin, CreateView):

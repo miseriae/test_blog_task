@@ -29,7 +29,11 @@ class CommentForm(forms.ModelForm):
 
     class Meta:
         model = Comment
-        fields = ('content', 'parent')
+        fields = ('post', 'content', 'parent')
         widgets = {
-            'content': forms.Textarea(attrs={'class': 'form-control'}),
+            'content': forms.Textarea(attrs={'class': 'ml-3 mb-3 form-control border-0 comment-add rounded-0', 'rows': '1', 'placeholder': 'Add a public comment'}),
         }
+
+    def save(self, *args, **kwargs):
+        Comment.objects.rebuild()
+        return super(CommentForm, self).save(*args, **kwargs)
