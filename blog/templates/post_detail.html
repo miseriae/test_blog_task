@@ -73,7 +73,6 @@
             </nav>
           </div>
 
-            <h2>Make a new comment</h2>
           <form id="commentform" class="commentform" method="POST">
             {% csrf_token %}
             {% with allcomments.count as total_comments %}
@@ -107,6 +106,11 @@
 
       var button = $(this).attr("value");
 
+      var placement = "commentform"
+      if (button == "newcommentform") {
+        var placement = "newcommentform"
+      }
+
       $.ajax({
         type: 'POST',
         url: '{% url "blog:addcomment" %}',
@@ -114,6 +118,14 @@
         cache: false,
         success: function (json) {
           console.log(json)
+          $('<div id="" class="my-2 p-2" style="border: 1px solid grey"> \
+            <div class="d-flex justify-content-between">By ' + json['user'] + '<div></div>Posted: Just now!</div> \
+            <div>' + json['result'] + '</div> \
+            <hr> \
+            </div>').insertBefore('#' + placement);
+
+          $('.commentform').trigger("reset");
+        formExit()
         },
         error: function (xhr, errmsg, err) {
           console.log(xhr, errmsg, err)
