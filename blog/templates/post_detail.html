@@ -45,6 +45,7 @@
             {% endrecursetree %}
           </div>
 
+          {% if user.is_authenticated %}
           <form id="commentform" class="commentform" method="POST">
             {% csrf_token %}
             {% with allcomments.count as total_comments %}
@@ -66,8 +67,8 @@
             <div class="d-flex flex-row-reverse">
               <button value="commentform" id="newcomment" type="submit" class="newcomment btn btn-primary">Submit</button>
             </div>
-
           </form>
+          {%  endif %}
 
       </div>
     </div>

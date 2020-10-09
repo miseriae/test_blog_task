@@ -3,7 +3,6 @@ from django.http import JsonResponse
 from django.http.response import HttpResponseRedirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import CreateView
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import Post, Comment
@@ -15,7 +14,6 @@ def home(request):
     return render(request, 'home.html', {'posts': all_posts})
 
 
-@login_required
 def post_detail(request, post):
     post = get_object_or_404(Post, slug=post)
     allcomments = post.comments.all()
@@ -52,6 +50,7 @@ def addcomment(request):
 class AddPostView(LoginRequiredMixin, CreateView):
     model = Post
     template_name = 'add_post.html'
+    login_url = 'login'
     form_class = PostForm
 
     def form_valid(self, form):
