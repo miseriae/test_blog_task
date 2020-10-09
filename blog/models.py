@@ -2,14 +2,15 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils.text import slugify
 
 from mptt.models import MPTTModel, TreeForeignKey
 
 
 class Post(models.Model):
     title = models.CharField(max_length=250)
-    image = models.ImageField(upload_to='post_pictures')
-    slug = models.SlugField(max_length=250, unique_for_date='publish')
+    image = models.ImageField(upload_to='post_pictures', blank=True)
+    slug = models.SlugField(max_length=250, unique=True)
     publish = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     body = models.TextField()
@@ -22,6 +23,20 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+    def _get_unique_slug(self):
+        slug = slugify(self.title)
+        unique_slug = slug
+        num = 1
+        while Post.objects.filter(slug=unique_slug).exists():
+            unique_slug = f'{slug}{num}'
+            num += 1
+        return unique_slug
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self._get_unique_slug()
+        super().save(*args, **kwargs)
 
     
 class Comment(MPTTModel):
