@@ -45,34 +45,6 @@
             {% endrecursetree %}
           </div>
 
-          <div class="py-4">
-            <nav aria-label="Page navigation example">
-              {% if comments.has_other_pages %}
-              <ul class="pagination">
-                {% if comments.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{ comments.previous_page_number }}">Previous</a>
-                </li>
-                {% else %}
-                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
-                {% endif %}
-                {% for num in comments.paginator.page_range %}
-                {% if comments.number == l %}
-                <li class="page-item active"><span class="page-link">{{ num }} <span class="sr-only">(current)</span></span>
-                </li>
-                {% else %}
-                <li><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-                {% endif %}
-                {% endfor %}
-                {% if comments.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ comments.next_page_number }}">Next</a></li>
-                {% else %}
-                <li class="page-item disabled"><a class="page-link" href="#">Next</a></li>
-                {% endif %}
-              </ul>
-              {% endif %}
-            </nav>
-          </div>
-
           <form id="commentform" class="commentform" method="POST">
             {% csrf_token %}
             {% with allcomments.count as total_comments %}
@@ -81,7 +53,7 @@
             </p>
             {% endwith %}
 
-            <select name="post" class="d-none" id="id_post">
+            <select id="pid" data-value="{{post.id}}" name="post" class="d-none" id="id_post">
               <option value="{{ post.id }}" selected="{{ post.id }}"></option>
             </select>
 
@@ -125,40 +97,66 @@
             </div>').insertBefore('#' + placement);
 
           $('.commentform').trigger("reset");
-        formExit()
+          formExit()
         },
         error: function (xhr, errmsg, err) {
           console.log(xhr, errmsg, err)
         }
       });
     })
+
+    function formExit(e) {
+      e.preventDefault();
+      document.getElementById("newcommentform").remove();
+      $("#newcommentform").remove();
+    }
     
 
-    function formExit() {
-      document.getElementById("newForm").remove();
+    function deleteComment(id) {
+      console.log(id)
+      $.ajax({
+        type: 'POST',
+        url: '{% url "blog:addcomment" %}',
+        data: {
+          nodeid: id,
+          action: 'delete',
+          csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+        },
+        success: function (json) {
+          $("#" + json['remove']).remove();
+        },
+        error: function (xhr, errmsg, err) {}
+      });
     }
+
 
     function myFunction(id) {
-
-      if (document.contains(document.getElementById("newForm"))) {
-        document.getElementById("newForm").remove();
-      }
-
-      var a = document.getElementById(id);
-      a.insertAdjacentHTML('afterend', 
-      '<form id="newForm" class="form-insert py-2" method="post"> \
-                <div class="d-flex justify-content-between"><h2>Reply:</h2><div><button type="button" class="btn btn-outline-secondary" onclick="formExit()"">Close</button></div></div> \
-                <select name="parent" class="d-none" id="id_parentt"> \
-                <option value="' + id + '" selected="' + id + '"></option> \
-                </select> \
-                <label for="id_content">Content:</label> \
-                <textarea name="content" cols="40" rows="5" class="form-control" required id="id_content"></textarea> \
-                {% csrf_token %} \
-                <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button> \
-              </form>');
+    if (document.contains(document.getElementById("newcommentform"))) {
+      document.getElementById("newcommentform").remove();
     }
+    var postid = document.getElementById('pid').getAttribute('data-value');
+    var d1 = document.getElementById(id);
+    d1.insertAdjacentHTML('afterend',
+      '<form id="newcommentform" class="commentform" method="post"> \
+        {% csrf_token %} \
+        <select name="post" class="d-none" id="id_post"> \
+          <option value="' + postid + '" selected="' + postid + '"></option> \
+        </select> <label class="small font-weight-bold"></label> \
+        <select name="parent" class="d-none" id="id_parent"> \
+          <option value="' + id + '" selected="' + id + '"></option> \
+        </select> \
+        <div class="d-flex"> \
+          <textarea name="content" cols="40" rows="1" class="ml-3 mb-3 form-control border-0 comment-add rounded-0" placeholder="Add a public comment" required="" id="id_content"></textarea> \
+        </div> \
+        <div class="d-flex flex-row-reverse"> \
+        <button type="button" class="btn btn-outline-secondary" onclick="formExit()">Close</button> \
+          <button value="newcommentform" id="newcommentinner" type="submit" class="mr-1 newcomment btn btn-primary ">Submit</button> \
+        </div> \
+      </form>'
+    );
+  }
 
-  $('#myForm').trigger("reset");
+  $('#commentform').trigger("reset");
   </script>
 
 {% endblock %}
