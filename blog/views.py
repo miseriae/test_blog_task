@@ -29,7 +29,6 @@ def post_detail(request, post):
 
 def addcomment(request):
     if request.method == 'POST':
-
         if request.POST.get('action') == 'delete':
             id = request.POST.get('nodeid')
             c = Comment.objects.get(id=id)
@@ -37,7 +36,6 @@ def addcomment(request):
             return JsonResponse({'remove': id})
         else:
             comment_form = CommentForm(request.POST)
-
             if comment_form.is_valid():
                 user_comment = comment_form.save(commit=False)
                 user_comment.user = request.user
